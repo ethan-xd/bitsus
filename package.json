@@ -1,0 +1,23 @@
+{
+  "name": "bitsus",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ethan-xd/bitsus.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ethan-xd/bitsus/issues"
+  },
+  "homepage": "https://github.com/ethan-xd/bitsus#readme",
+  "description": "",
+  "dependencies": {
+    "@types/node": "^15.6.0",
+    "typescript": "^4.2.4"
+  }
+}
