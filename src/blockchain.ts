@@ -6,7 +6,7 @@ function sha256(m: string) {
     return crypto.createHash("sha256").update(m).digest("hex");
 }
 
-function difficultyString(difficulty: number, full: boolean) {
+function difficultyString(difficulty: number, full: boolean = false) {
     return "0".repeat(Math.floor(difficulty / 15)) +
         chars[15 - Math.floor(difficulty % 15)] +
         (full ? "f".repeat(63 - Math.floor(difficulty / 15)) : "");
@@ -74,13 +74,26 @@ class Block {
     mine(difficulty: number) {
         let hash = this.getHash();
 
-        while (!hash.startsWith(difficultyString(difficulty, false))) {
+        while (!this.isMined(hash, difficulty)) {
             this.nonce++;
             hash = this.getHash();
         }
 
         return hash;
     };
+
+    isMined(hash: string, difficulty: number) {
+        let length = difficultyString(difficulty).length;
+
+        let number = difficulty;
+
+        while (length == difficultyString(number).length) {
+            if (hash.startsWith(difficultyString(number))) return true;
+            else number++;
+        }
+
+        return hash.startsWith(difficultyString(number).substr(0, difficultyString(number).length - 1));
+    }
 }
 
 export class Blockchain {

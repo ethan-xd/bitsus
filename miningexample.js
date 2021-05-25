@@ -11,10 +11,10 @@ function average(a) {
 }
 
 function difficultyString(d, full) {
-	return "0".repeat(Math.floor(d / 15)) + chars[15 - Math.floor(d % 15)] + (full ? "f".repeat(63 - Math.floor(d / 15)) : "");
+	return "0".repeat(Math.floor(d / 15)) + (15 - Math.floor(d % 15)).toString(16) + (full ? "f".repeat(63 - Math.floor(d / 15)) : "");
 }
 
-let chars = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
+console.log(difficultyString(45, false));
 
 function newDifficulty(d, t) {	
 	increaseBelow = 10000;
