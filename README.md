@@ -35,7 +35,7 @@ let difficultyString = "0".repeat(Math.floor(diff / 15)) + (15 - Math.floor(diff
 // difficultyString: string = "0000a"
 ```
 
-This difficulty 80 means the block hash must start with `0000a` to be valid proof of work.
+This difficulty 80 means the block hash must start with, or be less than, `0000a` to be valid proof of work.
 
 The difficulty value will increase by one if the time between blocks is less than 10000ms.
 The difficulty value will decrease by one if the time between blocks is more than 20000ms.
