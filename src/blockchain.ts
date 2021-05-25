@@ -1,14 +1,12 @@
 import * as crypto from "crypto";
 
-let chars = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
-
 function sha256(m: string) {
     return crypto.createHash("sha256").update(m).digest("hex");
 }
 
 function difficultyString(difficulty: number, full: boolean = false) {
     return "0".repeat(Math.floor(difficulty / 15)) +
-        chars[15 - Math.floor(difficulty % 15)] +
+        (15 - Math.floor(difficulty % 15)).toString(16) +
         (full ? "f".repeat(63 - Math.floor(difficulty / 15)) : "");
 }
 
