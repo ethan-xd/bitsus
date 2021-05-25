@@ -108,7 +108,7 @@ export class Blockchain {
         this.transactionPool = [];
     }
 
-    addBlock(nonce: number = 0, timestamp: number = new Date().getTime(), coinbase = "0000000000000000000000000000000000000000000000000000000000000000", transactions: Transaction[] = [], previousHash: string = this.getLatestBlock().getHash()) {
+    addBlock(coinbase = "0000000000000000000000000000000000000000000000000000000000000000", transactions: Transaction[] = [], nonce: number = 0, timestamp: number = new Date().getTime(), previousHash: string = this.getLatestBlock().getHash()) {
         let block = new Block(
             nonce,
             timestamp,
@@ -124,6 +124,23 @@ export class Blockchain {
 
     getLatestBlock() {
         return this.chain[this.chain.length - 1];
+    }
+
+    getWalletBalance(address: string) {
+        let balance = 0;
+
+        for (let i = this.chain.length - 1; i >= 0; i--) {
+            let block = this.chain[i];
+
+            if (block.coinbase == address) balance += this.coinbase;
+
+            for (let tx of block.transactions) {
+                if (tx.fromAddress == address) balance -= tx.amount;
+                if (tx.toAddress == address) balance += tx.amount;
+            }
+        }
+
+        return balance;
     }
 
     verifyBlockchain() {
