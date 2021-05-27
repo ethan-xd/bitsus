@@ -39,7 +39,7 @@ export class Transaction {
     }
 
     getHash() {
-        return sha256(sha256(String(this.timestamp + this.amount + this.fromAddress + this.toAddress)));
+        return sha256(sha256(String(this.timestamp) + String(this.amount) + this.fromAddress + this.toAddress));
     }
 
     signTransaction(privateKey: string) {
