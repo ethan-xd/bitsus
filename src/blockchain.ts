@@ -31,26 +31,21 @@ function newDifficulty(difficulty: number, time: number) {
 }
 
 export class Transaction {
-    public amount: number;
-    public fromAddress: string;
-    public toAddress: string;
-    public signature: string | null;
+    public signature?: string;
+    public timestamp: number;
 
-    constructor(amount: number, fromAddress: string, toAddress: string) {
-        this.amount = amount;
-        this.fromAddress = fromAddress;
-        this.toAddress = toAddress;
-        this.signature = null;
+    constructor(public amount: number, public fromAddress: string, public toAddress: string) {
+        this.timestamp = new Date().getTime();
     }
 
     getHash() {
-        return sha256(sha256(String(this.amount + this.fromAddress + this.toAddress + this.signature));
+        return sha256(sha256(String(this.timestamp + this.amount + this.fromAddress + this.toAddress)));
     }
 
     signTransaction(privateKey: string) {
         let key = ec.keyFromPrivate(privateKey);
 
-        let pk = key.getPublic();
+        let pk = key.getPublic('hex');
 
         let transactionPk = walletToPk(this.fromAddress);
 
@@ -61,8 +56,8 @@ export class Transaction {
         return true;
     }
 
-    verifySignature(signature: string) {
-        if (this.signature == null) return false;
+    verifySignature() {
+        if (this.signature === undefined) return false;
 
         let key = ec.keyFromPublic(walletToPk(this.fromAddress), 'hex');
 
@@ -72,18 +67,8 @@ export class Transaction {
 
 
 class Block {
-    public nonce: number;
-    public timestamp: number;
-    public coinbase: string;
-    public transactions: Transaction[];
-    public previousHash: string;
-
-    constructor(nonce: number, timestamp: number, coinbase: string, transactions: Transaction[], previousHash: string) {
-        this.nonce = nonce;
-        this.timestamp = timestamp;
-        this.coinbase = coinbase;
-        this.transactions = transactions;
-        this.previousHash = previousHash;
+    constructor(public nonce: number, public timestamp: number, public coinbase: string, public transactions: Transaction[], public previousHash: string) {
+        // sussy chungus
     }
 
     getHash() {
@@ -96,7 +81,7 @@ class Block {
         let str = "";
 
         for (let tx of this.transactions) {
-            str += ;
+            tx.getHash();
         }
 
         return sha256(sha256(str));
@@ -130,13 +115,8 @@ class Block {
 export class Blockchain {
     public chain: Block[];
     public transactionPool: Transaction[];
-    public difficulty: number;
-    public coinbase: number;
 
-    constructor(difficulty: number, coinbase: number) {
-        this.difficulty = difficulty;
-        this.coinbase = coinbase;
-
+    constructor(public difficulty: number, public coinbase: number) {
         this.chain = [this.createGenesisBlock()];
         this.transactionPool = [];
     }
@@ -196,6 +176,8 @@ export class Blockchain {
                 console.log(`${tx.fromAddress} -> ${tx.toAddress} $${tx.amount} is not heckin valid`);
                 return false;
             }
+
+            if (!tx.verifySignature()) return false;
         }
 
         return true;
