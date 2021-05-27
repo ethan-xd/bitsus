@@ -1,4 +1,8 @@
 import * as crypto from "crypto";
+import { pkToWallet, walletToPk } from './func/convertBase';
+
+const ECLib = require('elliptic').ec;
+const ec = new ECLib('secp256k1');
 
 function sha256(m: string) {
     return crypto.createHash("sha256").update(m).digest("hex");
@@ -30,13 +34,42 @@ export class Transaction {
     public amount: number;
     public fromAddress: string;
     public toAddress: string;
+    public signature: string | null;
 
     constructor(amount: number, fromAddress: string, toAddress: string) {
         this.amount = amount;
         this.fromAddress = fromAddress;
         this.toAddress = toAddress;
+        this.signature = null;
+    }
+
+    getHash() {
+        return sha256(sha256(String(this.amount + this.fromAddress + this.toAddress + this.signature));
+    }
+
+    signTransaction(privateKey: string) {
+        let key = ec.keyFromPrivate(privateKey);
+
+        let pk = key.getPublic();
+
+        let transactionPk = walletToPk(this.fromAddress);
+
+        if (pk != transactionPk) throw new Error("Public key must match wallet.");
+
+        this.signature = key.sign(this.getHash(), 'hex');
+
+        return true;
+    }
+
+    verifySignature(signature: string) {
+        if (this.signature == null) return false;
+
+        let key = ec.keyFromPublic(walletToPk(this.fromAddress), 'hex');
+
+        return key.verify(this.getHash(), this.signature);
     }
 }
+
 
 class Block {
     public nonce: number;
@@ -62,9 +95,9 @@ class Block {
     getTransactionHash() {
         let str = "";
 
-        this.transactions.forEach(tx => {
-            str += String(tx.amount) + tx.fromAddress + tx.toAddress;
-        });
+        for (let tx of this.transactions) {
+            str += ;
+        }
 
         return sha256(sha256(str));
     }
@@ -77,7 +110,7 @@ class Block {
             hash = this.getHash();
         }
 
-        return hash;
+        return true;
     };
 
     isMined(hash: string, difficulty: number) {
@@ -145,7 +178,24 @@ export class Blockchain {
 
     verifyBlockchain() {
         for (let i = this.chain.length - 1; i > 0; i--) {
-            if (this.chain[i].previousHash != this.chain[i - 1].getHash()) return false;
+            if (!this.verifyBlock(i)) return false;
+        }
+
+        return true;
+    }
+
+    verifyBlock(blockIndex: number = this.chain.length - 1) {
+        let block = this.chain[blockIndex];
+
+        if (block.previousHash != this.chain[blockIndex - 1].getHash()) return false;
+
+        for (let tx of block.transactions) {
+            let fromBalance = this.getWalletBalance(tx.fromAddress);
+
+            if (fromBalance < 0) {
+                console.log(`${tx.fromAddress} -> ${tx.toAddress} $${tx.amount} is not heckin valid`);
+                return false;
+            }
         }
 
         return true;
