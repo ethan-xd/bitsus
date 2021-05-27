@@ -1,75 +1,70 @@
-import * as crypto from "crypto";
+import { Blockchain, Transaction } from './blockchain';
+const ECLib = require('elliptic').ec;
+const ec = new ECLib('secp256k1');
+import { pkToWallet, walletToPk } from './func/convertBase';
 
-function sha256(m: string) {
-    return crypto.createHash("sha256").update(m).digest("hex");
-}
+let blockchain = new Blockchain(45, 100);
 
-class Transaction {
-    public amount: number;
-    public fromAddress: string;
-    public toAddress: string;
 
-    constructor(amount: number, fromAddress: string, toAddress: string) {
-        this.amount = amount;
-        this.fromAddress = fromAddress;
-        this.toAddress = toAddress;
-    }
-}
 
-class Block {
-    public nonce: number;
-    public timestamp: number;
-    public coinbase: string;
-    public transactions: Transaction[];
-    public previousHash: string;
+let key0 = ec.keyFromPrivate('1');
+let key1 = ec.genKeyPair();
+let key2 = ec.genKeyPair();
+let key3 = ec.genKeyPair();
 
-    constructor(nonce: number, timestamp: number, coinbase: string, transactions: Transaction[], previousHash: string) {
-        this.nonce = nonce;
-        this.timestamp = timestamp;
-        this.coinbase = coinbase;
-        this.transactions = transactions;
-        this.previousHash = previousHash;
-    }
+let k0w = pkToWallet(key0.getPublic('hex'));
+let k1w = pkToWallet(key1.getPublic('hex'));
+let k2w = pkToWallet(key2.getPublic('hex'));
+let k3w = pkToWallet(key3.getPublic('hex'));
 
-    getHash() {
-        let str = String(this.nonce) + String(this.timestamp) + this.coinbase + this.getTransactionHash() + this.previousHash;
 
-        return sha256(sha256(str));
-    }
 
-    getTransactionHash() {
-        let str = "";
+console.log("PRVKEY: 1");
+console.log("PUBKEY:", key0.getPublic('hex'));
+console.log("WALLET:", pkToWallet(key0.getPublic('hex')));
 
-        this.transactions.forEach(tx => {
-            str += String(tx.amount) + tx.fromAddress + tx.toAddress;
-        });
+let myTransaction = new Transaction(20, k0w, k1w);
+myTransaction.signTransaction(key0.getPrivate('hex'));
 
-        return sha256(sha256(str));
-    }
+console.log("myTransaction, signature valid and cute?", myTransaction.verifySignature());
 
-    mine() {
-        let hash = this.getHash();
-        while (!hash.startsWith("0000")) {
-            this.nonce++;
-            hash = this.getHash();
-        }
 
-        return hash;
-    };
-}
+
+let block = blockchain.addBlock(k0w, [myTransaction]);
+
+console.log("Mining block 1...");
+block.mine(blockchain.difficulty);
+
+console.log("block heckin valid and cute?", blockchain.verifyBlockchain());
+
+console.log(`${k0w}: ${blockchain.getWalletBalance(k0w)}`);
+console.log(`${k1w}: ${blockchain.getWalletBalance(k1w)}`);
+console.log(`${k2w}: ${blockchain.getWalletBalance(k2w)}`);
+console.log(`${k3w}: ${blockchain.getWalletBalance(k3w)}`);
+
+
+/***************************************************************/
+
 
 let transactions = [
-    new Transaction(100, "1234cb4a18c14f9fe1c33ce7736d2a0042f1ce3ba97b332348dbf9fa0b5989be", "abc1cb175766a299f0d63d225122a189229941b3e8fab65bd8565d0077093df6"),
-    new Transaction(100, "66551390e365dd59a383a0161d5368c21f857907722fc0b123f0d3c3c1d341d1", "de4dd1f7d3ff82891b39fb5e2eb9771813127d199c0644db78ae2eac06050403"),
+    new Transaction(20, k0w, k1w),
+    new Transaction(40, k1w, k3w)
 ];
 
-let block = new Block(
-    0,
-    new Date().getTime(),
-    "3af1c6df81549b5dada40fdb11c2c6b3f05f1af2a8b484c1da5f95b9b53f1f2e",
-    transactions,
-    "0000000000000000000000000000000000000000000000000000000000000000"
-);
+transactions[0].signTransaction(key0.getPrivate('hex'));
+transactions[1].signTransaction(key1.getPrivate('hex'));
 
-console.log(block.mine());
-console.log(block);
+
+let jeffBlock = blockchain.addBlock(k2w, transactions);
+
+console.log("Mining block 2...");
+jeffBlock.mine(blockchain.difficulty);
+
+console.log("block heckin valid and cute?", blockchain.verifyBlockchain());
+
+console.log(`${k0w}: ${blockchain.getWalletBalance(k0w)}`);
+console.log(`${k1w}: ${blockchain.getWalletBalance(k1w)}`);
+console.log(`${k2w}: ${blockchain.getWalletBalance(k2w)}`);
+console.log(`${k3w}: ${blockchain.getWalletBalance(k3w)}`);
+
+
