@@ -5,22 +5,34 @@ TypeScript cryptocurrency
 ## Calculate block hash
 
 ```js
-function transactionHash(blockTransactions: Transaction[]) {
-  let str = "";
-  
-  blockTransactions.forEach(tx => {
-    str += String(tx.amount) + tx.fromAddress + tx.toAddress;
-  });
-  
-  return sha256(sha256(str));
+// Get the hash of a single transaction
+function getTransactionsHash(tx: Transaction) {
+    return sha256(sha256(
+        String(tx.timestamp) +
+        String(tx.amount) +
+        tx.fromAddress +
+        tx.toAddress
+    ));
+}
+
+// Get the hash of the list of transactions in a block
+function getTransactionListHash(blockTransactions: Transaction[]) {
+    let str = "";
+
+    for (let tx of blockTransactions) {
+        getTransactionHash(tx);
+    }
+
+    return sha256(sha256(str));
 };
 
+// Get the block hash
 let blockHash = sha256(sha256(
-  String(nonce) + 
-  String(unixTimestamp) + 
-  coinbaseAddress + 
-  transactionHash(blockTransactions) + 
-  previousBlockHash
+    String(nonce) +
+    String(unixTimestamp) +
+    coinbaseAddress +
+    getTransactionListHash(blockTransactions) +
+    previousBlockHash
 ));
 ```
 
