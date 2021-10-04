@@ -41,13 +41,12 @@ const blockHash = sha256(sha256(
 Difficulty is based off a number. Here's how to convert it:
 
 ```js
-const diff = 80;
-
-const difficultyString = "0".repeat(Math.floor(difficulty / 15)) +
+function difficultyString(difficulty: number, full: boolean = false) {
+    return "0".repeat(Math.floor(difficulty / 15)) +
         (15 - Math.floor(difficulty % 15)).toString(16) +
         (full ? "f".repeat(63 - Math.floor(difficulty / 15)) : "");
 }
-
+// If difficulty is 80, then difficultyString = "0000a"
 ```
 
 This difficulty 80 means the block hash must start with, or be less than, `0000a` to be valid proof of work.
