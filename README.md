@@ -20,14 +20,14 @@ function getTransactionListHash(blockTransactions: Transaction[]) {
     let str = "";
 
     for (let tx of blockTransactions) {
-        getTransactionHash(tx);
+        str += getTransactionHash(tx);
     }
 
     return sha256(sha256(str));
 };
 
 // Get the block hash
-let blockHash = sha256(sha256(
+const blockHash = sha256(sha256(
     String(nonce) +
     String(unixTimestamp) +
     coinbaseAddress +
@@ -41,10 +41,13 @@ let blockHash = sha256(sha256(
 Difficulty is based off a number. Here's how to convert it:
 
 ```js
-let diff = 80;
+const diff = 80;
 
-let difficultyString = "0".repeat(Math.floor(diff / 15)) + (15 - Math.floor(diff % 15)).toString(16);
-// difficultyString: string = "0000a"
+const difficultyString = "0".repeat(Math.floor(difficulty / 15)) +
+        (15 - Math.floor(difficulty % 15)).toString(16) +
+        (full ? "f".repeat(63 - Math.floor(difficulty / 15)) : "");
+}
+
 ```
 
 This difficulty 80 means the block hash must start with, or be less than, `0000a` to be valid proof of work.
