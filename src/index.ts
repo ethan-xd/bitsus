@@ -6,7 +6,9 @@ const secp = new ec('secp256k1');
 
 let blockchain = new Blockchain(45, 100);
 
-
+/*
+ * Keypairs
+ */
 
 let key0 = secp.keyFromPrivate('1');
 let key1 = secp.genKeyPair();
@@ -24,12 +26,18 @@ console.log("PRVKEY: 1");
 console.log("PUBKEY:", key0.getPublic('hex'));
 console.log("WALLET:", pkToWallet(key0.getPublic('hex')));
 
+/*
+ * Test transaction
+ */
+
 let myTransaction = new Transaction(20, k0w, k1w);
 myTransaction.signTransaction(key0.getPrivate('hex'));
 
 console.log("myTransaction, signature valid and cute?", myTransaction.verifySignature());
 
-
+/*
+ * Test block
+ */
 
 let block = blockchain.addBlock(k0w, [myTransaction]);
 
@@ -43,10 +51,9 @@ console.log(`${k1w}: ${blockchain.getWalletBalance(k1w)}`);
 console.log(`${k2w}: ${blockchain.getWalletBalance(k2w)}`);
 console.log(`${k3w}: ${blockchain.getWalletBalance(k3w)}`);
 
-
-/***************************************************************/
-
-
+/*
+ * Duplicate previously done transaction from block 2 into block 2
+ */
 let transactions = [
     new Transaction(20, k0w, k1w),
     new Transaction(40, k1w, k3w)
@@ -55,22 +62,20 @@ let transactions = [
 transactions[0].signTransaction(key0.getPrivate('hex'));
 transactions[1].signTransaction(key1.getPrivate('hex'));
 
-
-let jeffBlock = blockchain.addBlock(k2w, transactions);
+let block2 = blockchain.addBlock(k2w, transactions);
 
 console.log("Mining block 2...");
-jeffBlock.mine(blockchain.difficulty);
+block2.mine(blockchain.difficulty);
 
-console.log("block heckin valid and cute?", blockchain.verifyBlockchain());
+console.log("Block 2 before duplication. Valid?", blockchain.verifyBlockchain());
 
 console.log(`${k0w}: ${blockchain.getWalletBalance(k0w)}`);
 console.log(`${k1w}: ${blockchain.getWalletBalance(k1w)}`);
 console.log(`${k2w}: ${blockchain.getWalletBalance(k2w)}`);
 console.log(`${k3w}: ${blockchain.getWalletBalance(k3w)}`);
 
-// Duplicate previously done transaction from block 2 into block 2
-jeffBlock.transactions.push(jeffBlock.transactions[0]);
-jeffBlock.mine(blockchain.difficulty);
+block2.transactions.push(block2.transactions[0]);
+block2.mine(blockchain.difficulty);
 
 console.log("Remined with duplicated transaction...should not be valid. is it valid?", blockchain.verifyBlockchain());
 
@@ -78,3 +83,4 @@ console.log(`${k0w}: ${blockchain.getWalletBalance(k0w)}`);
 console.log(`${k1w}: ${blockchain.getWalletBalance(k1w)}`);
 console.log(`${k2w}: ${blockchain.getWalletBalance(k2w)}`);
 console.log(`${k3w}: ${blockchain.getWalletBalance(k3w)}`);
+
