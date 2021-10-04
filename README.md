@@ -1,6 +1,6 @@
 # Bitsus
 
-TypeScript cryptocurrency
+TypeScript cryptocurrency.
 
 ## Calculate block hash
 
