@@ -1,8 +1,9 @@
 import * as crypto from "crypto";
 import { pkToWallet, walletToPk } from './func/convertBase';
+import { ec } from "elliptic";
+import Signature = ec.Signature;
 
-const ECLib = require('elliptic').ec;
-const ec = new ECLib('secp256k1');
+const secp = new ec('secp256k1');
 
 function sha256(m: string) {
     return crypto.createHash("sha256").update(m).digest("hex");
@@ -31,7 +32,7 @@ function newDifficulty(difficulty: number, time: number) {
 }
 
 export class Transaction {
-    public signature?: string;
+    public signature?: Signature;
     public timestamp: number;
 
     constructor(public amount: number, public fromAddress: string, public toAddress: string) {
@@ -43,7 +44,7 @@ export class Transaction {
     }
 
     signTransaction(privateKey: string) {
-        let key = ec.keyFromPrivate(privateKey);
+        let key = secp.keyFromPrivate(privateKey);
 
         let pk = key.getPublic('hex');
 
@@ -59,16 +60,26 @@ export class Transaction {
     verifySignature() {
         if (this.signature === undefined) return false;
 
-        let key = ec.keyFromPublic(walletToPk(this.fromAddress), 'hex');
+        let key = secp.keyFromPublic(walletToPk(this.fromAddress), 'hex');
 
         return key.verify(this.getHash(), this.signature);
+    }
+
+    getSignatureHash() {
+        let str = "";
+
+        if (this.signature === undefined) return str;
+
+        for (let n of this.signature.toDER()) str += n;
+
+        return sha256(sha256(str));
     }
 }
 
 
 class Block {
     constructor(public nonce: number, public timestamp: number, public coinbase: string, public transactions: Transaction[], public previousHash: string) {
-        // sussy chungus
+        // Intentionally left blank
     }
 
     getHash() {
@@ -109,6 +120,13 @@ class Block {
         }
 
         return hash.startsWith(difficultyString(number).substr(0, difficultyString(number).length - 1));
+    }
+
+    isTransactionInBlock(transaction: Transaction) {
+        for (let tx of this.transactions) {
+            if (transaction.getSignatureHash() == tx.getSignatureHash()) return true;
+        }
+        return false;
     }
 }
 
@@ -169,12 +187,32 @@ export class Blockchain {
 
         if (block.previousHash != this.chain[blockIndex - 1].getHash()) return false;
 
+        let txSignatureHashes: string[] = [];
+
         for (let tx of block.transactions) {
             let fromBalance = this.getWalletBalance(tx.fromAddress);
 
             if (fromBalance < 0) {
                 console.log(`${tx.fromAddress} -> ${tx.toAddress} $${tx.amount} is not heckin valid`);
                 return false;
+            }
+
+            let txSigHash = tx.getSignatureHash();
+
+            // Check if transaction signature in block already
+            if (txSignatureHashes.includes(txSigHash)) return false;
+
+            txSignatureHashes.push(txSigHash);
+
+            /*
+             * This method is terrible and will probably end up being very inefficient.
+             * Not really sure how to go about this one.
+             */
+            // Check if transactions are in a previous block
+            for (let b of this.chain) {
+                if (b.getHash() == block.getHash()) break;
+
+                if (b.isTransactionInBlock(tx)) return false;
             }
 
             if (!tx.verifySignature()) return false;
