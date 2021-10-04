@@ -44,7 +44,7 @@ let block = blockchain.addBlock(k0w, [myTransaction]);
 console.log("Mining block 1...");
 block.mine(blockchain.difficulty);
 
-console.log("block heckin valid and cute?", blockchain.verifyBlockchain());
+console.log("block heckin valid and cute?", blockchain.verifyBlock(1));
 
 console.log(`${k0w}: ${blockchain.getWalletBalance(k0w)}`);
 console.log(`${k1w}: ${blockchain.getWalletBalance(k1w)}`);
@@ -52,7 +52,7 @@ console.log(`${k2w}: ${blockchain.getWalletBalance(k2w)}`);
 console.log(`${k3w}: ${blockchain.getWalletBalance(k3w)}`);
 
 /*
- * Duplicate previously done transaction from block 2 into block 2
+ * Duplicate previously done transaction from block 3 into block 3 (Should make block invalid)
  */
 let transactions = [
     new Transaction(20, k0w, k1w),
@@ -64,10 +64,10 @@ transactions[1].signTransaction(key1.getPrivate('hex'));
 
 let block2 = blockchain.addBlock(k2w, transactions);
 
-console.log("Mining block 2...");
+console.log("\n\nMining block 2...");
 block2.mine(blockchain.difficulty);
 
-console.log("Block 2 before duplication. Valid?", blockchain.verifyBlockchain());
+console.log("Block 2 before duplication. Valid?", blockchain.verifyBlock(2));
 
 console.log(`${k0w}: ${blockchain.getWalletBalance(k0w)}`);
 console.log(`${k1w}: ${blockchain.getWalletBalance(k1w)}`);
@@ -77,10 +77,27 @@ console.log(`${k3w}: ${blockchain.getWalletBalance(k3w)}`);
 block2.transactions.push(block2.transactions[0]);
 block2.mine(blockchain.difficulty);
 
-console.log("Remined with duplicated transaction...should not be valid. is it valid?", blockchain.verifyBlockchain());
+console.log("Remined with duplicated transaction from same block...should not be valid. is it valid?", blockchain.verifyBlock(2));
 
 console.log(`${k0w}: ${blockchain.getWalletBalance(k0w)}`);
 console.log(`${k1w}: ${blockchain.getWalletBalance(k1w)}`);
 console.log(`${k2w}: ${blockchain.getWalletBalance(k2w)}`);
 console.log(`${k3w}: ${blockchain.getWalletBalance(k3w)}`);
 
+
+/*
+ * Duplicate previously done transaction from block 1 into block 2 (Should make block invalid)
+ */
+transactions = [block2.transactions[0]];
+
+let block3 = blockchain.addBlock(k2w, transactions);
+
+console.log("\n\nMining block 3...");
+block3.mine(blockchain.difficulty);
+
+console.log("Duplicated transaction from block 2...should not be valid. is it valid?", blockchain.verifyBlock(3));
+
+console.log(`${k0w}: ${blockchain.getWalletBalance(k0w)}`);
+console.log(`${k1w}: ${blockchain.getWalletBalance(k1w)}`);
+console.log(`${k2w}: ${blockchain.getWalletBalance(k2w)}`);
+console.log(`${k3w}: ${blockchain.getWalletBalance(k3w)}`);
