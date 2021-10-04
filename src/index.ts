@@ -67,4 +67,13 @@ console.log(`${k1w}: ${blockchain.getWalletBalance(k1w)}`);
 console.log(`${k2w}: ${blockchain.getWalletBalance(k2w)}`);
 console.log(`${k3w}: ${blockchain.getWalletBalance(k3w)}`);
 
+// Duplicate previously done transaction from block 2 into block 2
+jeffBlock.transactions.push(jeffBlock.transactions[0]);
+jeffBlock.mine(blockchain.difficulty);
 
+console.log("Remined with duplicated transaction...should not be valid. is it valid?", blockchain.verifyBlockchain());
+
+console.log(`${k0w}: ${blockchain.getWalletBalance(k0w)}`);
+console.log(`${k1w}: ${blockchain.getWalletBalance(k1w)}`);
+console.log(`${k2w}: ${blockchain.getWalletBalance(k2w)}`);
+console.log(`${k3w}: ${blockchain.getWalletBalance(k3w)}`);
