@@ -20,14 +20,14 @@ function getTransactionListHash(blockTransactions: Transaction[]) {
     let str = "";
 
     for (let tx of blockTransactions) {
-        getTransactionHash(tx);
+        str += getTransactionHash(tx);
     }
 
     return sha256(sha256(str));
 };
 
 // Get the block hash
-let blockHash = sha256(sha256(
+const blockHash = sha256(sha256(
     String(nonce) +
     String(unixTimestamp) +
     coinbaseAddress +

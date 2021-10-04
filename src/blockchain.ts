@@ -92,7 +92,7 @@ class Block {
         let str = "";
 
         for (let tx of this.transactions) {
-            tx.getHash();
+            str += tx.getHash();
         }
 
         return sha256(sha256(str));
