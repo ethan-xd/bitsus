@@ -1,16 +1,17 @@
 import { Blockchain, Transaction } from './blockchain';
-const ECLib = require('elliptic').ec;
-const ec = new ECLib('secp256k1');
+import { ec } from "elliptic";
 import { pkToWallet, walletToPk } from './func/convertBase';
+
+const secp = new ec('secp256k1');
 
 let blockchain = new Blockchain(45, 100);
 
 
 
-let key0 = ec.keyFromPrivate('1');
-let key1 = ec.genKeyPair();
-let key2 = ec.genKeyPair();
-let key3 = ec.genKeyPair();
+let key0 = secp.keyFromPrivate('1');
+let key1 = secp.genKeyPair();
+let key2 = secp.genKeyPair();
+let key3 = secp.genKeyPair();
 
 let k0w = pkToWallet(key0.getPublic('hex'));
 let k1w = pkToWallet(key1.getPublic('hex'));

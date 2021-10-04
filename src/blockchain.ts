@@ -1,6 +1,6 @@
 import * as crypto from "crypto";
 import { pkToWallet, walletToPk } from './func/convertBase';
-import {ec} from "elliptic";
+import { ec } from "elliptic";
 import Signature = ec.Signature;
 
 const secp = new ec('secp256k1');
